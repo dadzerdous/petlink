@@ -6,6 +6,7 @@ import { PlayMinigame } from './modules/playGame.js';
 import { openShop } from './modules/shop.js';
 import { LobbyManager } from './modules/lobby.js';
 import { showToast, updateStats, speak, setPetSprite, animatePet, updateRoomItems } from './modules/ui.js';
+import { startTutorial } from './modules/tutorial.js';
 
 // ── State ──────────────────────────────────────────────────────────────
 let selectedRace = null;
@@ -13,7 +14,7 @@ let socket = null;
 let lobby = null;
 let feedGame = null;
 let playGame = null;
-let pendingMpScore = null; // score waiting to submit to server
+let pendingMpScore = null;
 
 // ── Race Select Screen ─────────────────────────────────────────────────
 const raceCards = document.querySelectorAll('.race-card');
@@ -41,7 +42,6 @@ startBtn.addEventListener('click', () => {
   petState.load();
   const existing = petState.get();
   if (existing.race === selectedRace && existing.name === name) {
-    // Resume existing save
     bootGame(name, selectedRace);
   } else {
     petState.reset(name, selectedRace);
@@ -53,33 +53,22 @@ startBtn.addEventListener('click', () => {
 function bootGame(name, race) {
   const raceData = getRaceData(race);
 
-  // Apply theme
   document.body.className = raceData.themeClass;
-
-  // Set header
   document.getElementById('hdr-name').textContent = name;
   document.getElementById('hdr-race').textContent = raceData.badge;
-
-  // Set food icon in action bar
   document.getElementById('feed-icon').textContent = raceData.food.emoji;
-
-  // Set pet sprite
   setPetSprite(race);
 
-  // Switch screens
   document.getElementById('screen-race').classList.remove('active');
   document.getElementById('screen-game').classList.add('active');
 
-  // Init socket
   socket = io();
   lobby = new LobbyManager(socket, race, name);
   lobby.onGameStart = (gameType) => launchMpMinigame(gameType);
   lobby.onGameResults = () => { pendingMpScore = null; };
 
-  // Start pet tick
   petState.startTick();
 
-  // Subscribe UI updates
   petState.onChange((state, event) => {
     updateStats(state);
     updateRoomItems(state.roomItems);
@@ -90,11 +79,9 @@ function bootGame(name, race) {
     }
   });
 
-  // Initial render
   updateStats(petState.get());
   updateRoomItems(petState.get().roomItems);
 
-  // Idle speech timer
   setInterval(() => {
     const s = petState.get();
     const rd = getRaceData(race);
@@ -104,7 +91,6 @@ function bootGame(name, race) {
     else if (Math.random() < 0.3) speak(rd.speech.idle);
   }, 8000);
 
-  // Pet click
   document.getElementById('pet-sprite').addEventListener('click', () => {
     const rd = getRaceData(race);
     speak(rd.speech.idle);
@@ -112,20 +98,17 @@ function bootGame(name, race) {
   });
 
   bindActions(race);
+
+  // ── Start tutorial for new players (slight delay so UI is ready) ──
+  setTimeout(() => startTutorial(), 400);
 }
 
 // ── Action Bindings ────────────────────────────────────────────────────
 function bindActions(race) {
-  // Feed
   document.getElementById('btn-feed').onclick = () => openFeedModal(race, false);
-
-  // Play
   document.getElementById('btn-play').onclick = () => openPlayModal(race, false);
-
-  // Shop
   document.getElementById('btn-shop').onclick = () => openShop(race);
 
-  // Sleep
   document.getElementById('btn-sleep').onclick = () => {
     petState.sleep();
     speak(getRaceData(race).speech.tired);
@@ -133,7 +116,6 @@ function bindActions(race) {
     animatePet();
   };
 
-  // Multiplayer
   document.getElementById('btn-open-lobby').onclick = () => lobby.open();
 }
 
@@ -192,11 +174,9 @@ function onMinigameEnd(type, score, isMultiplayer) {
   }
 
   if (isMultiplayer) {
-    // Submit score to server — results handled by lobby
     lobby.submitScore(score);
     showToast(`Score: ${score}! Waiting for others... ⏳`);
   } else {
-    // Solo rewards
     petState.adjust('coins', coins);
     petState.adjust('xp', xp);
     showToast(`🎮 Score: ${score}! +${coins}💰 +${xp}XP`);
