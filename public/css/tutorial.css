@@ -1,0 +1,112 @@
+/* ── Tutorial Overlay ────────────────────────────────────────────────── */
+/* Add this block to the bottom of main.css */
+
+#tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+#tutorial-spotlight {
+  position: fixed;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  border: 2px solid var(--c-accent2);
+  pointer-events: none;
+  z-index: 501;
+  transition: all 0.3s ease;
+  display: none;
+}
+
+#tutorial-popup {
+  position: fixed;
+  background: var(--c-bg2);
+  border: 2px solid var(--c-accent2);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+  z-index: 502;
+  pointer-events: all;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+#tutorial-popup.tutorial-pop {
+  animation: tpop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes tpop {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+#tutorial-emoji {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+#tutorial-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--c-text);
+  margin: 0;
+}
+
+#tutorial-body {
+  font-size: 0.88rem;
+  color: var(--c-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+#tutorial-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.4rem;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+#tutorial-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.t-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-bar);
+  transition: background 0.2s, transform 0.2s;
+}
+.t-dot.active {
+  background: var(--c-accent2);
+  transform: scale(1.3);
+}
+
+#tutorial-btns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+#tutorial-skip {
+  font-size: 0.78rem;
+  padding: 0.4rem 0.7rem;
+}
+
+#tutorial-next {
+  font-size: 0.85rem;
+  padding: 0.45rem 1rem;
+}
+
+/* Highlight ring on targeted elements */
+.tutorial-highlight {
+  position: relative;
+  z-index: 503 !important;
+  border-radius: 8px;
+  pointer-events: none;
+}
